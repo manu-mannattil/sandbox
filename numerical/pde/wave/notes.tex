@@ -1,0 +1,136 @@
+\documentclass[11pt]{article}
+
+\usepackage{amssymb,bm,mathtools} % fonts
+\usepackage{color,fullpage,graphicx,hyperref,parskip} % layout + media
+
+\def\FT#1{\ensuremath{\mathcal{F}{#1}}}
+\def\FTI#1{\ensuremath{\mathcal{F}^{-1}{#1}}}
+
+\begin{document}
+
+\title{Numerical solutions of wave equations}
+\author{Manu Mannattil}
+\maketitle
+
+\section{1D wave equations}
+
+We want to solve the 1D wave equation given by
+%
+\begin{equation}
+  u_{tt} = u_{xx}.
+\end{equation}
+%
+
+\subsection{FFT solution}
+
+We Fourier transform $u$ in real space to compute $u_{xx}$:
+%
+\begin{equation}
+  u_{xx}(x; t) = \FTI[q^{2}\hat{u}(t)],
+\end{equation}
+%
+where $\hat{u}(t) = \FT[u(x; t)]$ is the Fourier transform of $u$.
+Verlet integration in time then gives
+%
+\begin{equation}
+  u(x; {t + \Delta t}) = 2u(x; t) - u(x; t - \Delta t) + (\Delta t)^{2}u_{xx}(x; t).
+\end{equation}
+
+\subsection{Chebyshev collocation}
+
+If $D$ is the Chebyshev differentiation matrix, we compute $u_{xx}$ as
+%
+\begin{equation}
+  u_{xx}(x; t) = D^{2}u(x; t).
+\end{equation}
+%
+Verlet integration in time then gives
+%
+\begin{equation}
+  u(x; {t + \Delta t}) = 2u(x; t) - u(x; t - \Delta t) + (\Delta t)^{2}u_{xx}(x; t).
+\end{equation}
+%
+However, in general, $u(x; t + \Delta t)$ will not satisfy the imposed boundary conditions.
+For that we need to replace the end-point values $u(\pm 1; t + \Delta t)$ so that the boundary conditions are satisfied.
+
+\begin{itemize}
+  \item In the case of Dirichlet boundary conditions, we just set $u(\pm 1; t + \Delta t ) = 0$ after each time step.
+    This will obviously only work if the time step is very small.
+
+  \item For Neumann BC, we need to solve for $u_{1} = u(-1; t)$ and $u_{N} = u(1, t)$ from the BC $Du = 0$ after each time step.
+    To do so, let the entries of $D$ be
+  %
+  \begin{equation}
+    D = 
+    \begin{pmatrix}
+      D_{1,1} & D_{1,2} & \cdots & D_{1,N-1} & D_{1,N}\\
+      D_{2,1} & D_{2,2} & \cdots & D_{2,N-1} & D_{2,N}\\
+      \vdots & \vdots & \vdots & \vdots & \vdots\\
+      D_{N-1,1} & D_{N-1,2} & \cdots & D_{N-1,N-1} & D_{N-1,N}\\
+      D_{N,1} & D_{N,2} & \cdots & D_{N,N-1} & d_{N,N}
+    \end{pmatrix}
+  \end{equation}
+  %
+  Then, the BC can be written as two linear equations in two unknowns $u_{1}$ and $u_{N}$:
+  %
+  \begin{equation}
+    \begin{aligned}
+      D_{1,1}\,{\color{red}u_{1}} + D_{1,2}\,u_{2} + \cdots + D_{1,N-1}\,u_{N-1} + D_{1,N}\,{\color{red}u_{1}} &= 0,\\
+      D_{N,1}\,{\color{red}u_{1}} + D_{N,2}\,u_{2} + \cdots + D_{N,N-1}\,u_{N-1} + D_{N,N}\,{\color{red}u_{N}} &= 0.
+    \end{aligned}
+  \end{equation}
+  %
+  This can be rearranged and written in matrix form as
+  %
+  \begin{equation}
+    \begin{pmatrix}
+      D_{1,1} & D_{1,N}\\
+      D_{N,1} & D_{N,N}\\
+    \end{pmatrix}
+    \begin{pmatrix}
+      \color{red}
+      u_{1}\\
+      \color{red}
+      u_{2}
+    \end{pmatrix}
+    =
+    \begin{pmatrix}
+      D_{1,2}\,u_{2} + \cdots + D_{1,N-1}\,u_{N-1}\\
+      D_{N,2}\,u_{2} + \cdots + D_{N,N-1}\,u_{N-1}
+    \end{pmatrix}.
+  \end{equation}
+  %
+  So to impose Neumann BC, we solve the above linear system after each time step.
+
+  \item Absorbing or open boundary conditions.
+    The wave equation can be factorized as
+    %
+    \begin{equation}
+      \left(\partial_{t}^{2} - \partial_{x}^{2}\right)u = \left(\partial_{t} - \partial_{x}\right)\left(\partial_{t} + \partial_{x}\right)u = 0.
+    \end{equation}
+    %
+    The equations $(\partial_{t} \pm \partial_{x})u = 0$ represent one-way waves moving in $\pm x$ directions.
+    If we impose
+    %
+    \begin{equation}
+      \begin{aligned}
+        \partial_{t}u - \partial_{x}u &= 0 \quad\text{at}\quad x = -1,\\
+        \partial_{t}u + \partial_{x}u &= 0 \quad\text{at}\quad x = 1,\\
+      \end{aligned}
+    \end{equation}
+    %
+    it will effectively kill waves that reenter the domain $[-1, 1]$ after reflection.
+    Thus, we only use the full wave equation in updating the interior points $(u_{2}, u_{3}, \ldots, u_{N-1})$.  
+    We update the end point values $u_{1}$ and $u_{N}$ using the BCs instead:
+    %
+    \begin{equation}
+      \begin{aligned}
+        u(-1; t + \Delta t) &= u(-1; t) + \Delta t\,u_{x}(-1; t),\\
+        u(1; t + \Delta t) &= u(1; t) - \Delta t\,u_{x}(1; t).\\
+      \end{aligned}
+    \end{equation}
+    %
+
+\end{itemize}
+
+\end{document}
