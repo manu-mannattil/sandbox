@@ -1,4 +1,4 @@
-Ephemeral programs written mainly to learn new things.  Here be dragons!
+Programs written mainly to learn new things.  Here be dragons!
 
 ## License
 

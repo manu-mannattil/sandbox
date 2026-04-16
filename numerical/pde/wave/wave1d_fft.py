@@ -1,5 +1,12 @@
 # -*- coding: utf-8 -*-
 
+"""Solves the 1D wave equation using Fourier differentiation.
+
+    u_tt = u_xx     x in [-1, 1]
+
+The solution is periodic and wraps around.
+"""
+
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation

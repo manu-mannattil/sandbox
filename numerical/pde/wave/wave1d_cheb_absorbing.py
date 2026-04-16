@@ -2,12 +2,11 @@
 
 """Solves the 1D wave equation using Chebyshev collocation.
 
-    u_tt = u_xx     u in [-1, 1]
+    u_tt = u_xx     x in [-1, 1]
     u_t - u_x = 0   x = -1 (absorbing BC)
     u_t + u_x = 0   x = 1 (absorbing BC)
 
-In case of a string, the BC corresponds to tied ends.  So there's
-a phase change when the wave gets reflected back.
+The wave exits the domain without getting reflected.
 """
 
 import numpy as np
