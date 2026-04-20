@@ -1,0 +1,88 @@
+\documentclass[11pt]{article}
+
+\usepackage{amssymb,bm,mathtools} % fonts
+\usepackage{color,fullpage,graphicx,hyperref,parskip} % layout + media
+
+\begin{document}
+
+\title{Optimal charging of a battery}
+\author{Manu Mannattil}
+\maketitle
+
+\section{Problem formulation}
+
+The battery state at a given time $t$ is quantified by its state of charge (SOC) $x(t)$.
+If the current passing through the battery during galvanostatic cycling is $u(t)$, then the SOC dynamics is given by
+%
+\begin{equation}
+  \frac{d\, x(t)}{d\, t} = \frac{u(t)}{Q}.
+\end{equation}
+%
+Here $Q > 0$ is the maximum amount of charge that the battery can hold.
+Charging (discharging) occurs till time $T$ such that
+%
+\begin{equation}
+  \int_{0}^{T} u(t) = \pm Q.
+\end{equation}
+%
+Hence, during normal working conditions of the battery, the SOC satisfies the constraint $0 \leq x(t) \leq 1$.
+
+The cost function to be minimized is the total power loss
+%
+\begin{equation}
+  \mathcal{E}[x(t), u(t)] = \int_{0}^{T}dt\, R(x, t) u^{2},
+  \quad
+  \text{s.t.}
+  \quad
+  \left\{
+  \begin{aligned}
+    \dot{x} &= Q^{-1}u,\\
+    x(0) &= 0,\\
+    x(T) &= 1.
+  \end{aligned}
+  \right.
+\end{equation}
+%
+Here $R(x, t)$ is the internal resistance of the battery, which is taken to be a function of the SOC and time.
+We take it to be a general, nonlinear function that is independent of the current $u$.%
+\footnote{Any dependence on the current can be converted to a dependence on $\dot{x}$.}
+
+We form the Hamiltonian using Pontryagin's minimum principle
+%
+\begin{equation}
+  H = R u^{2} + \lambda \frac{u}{Q}.
+\end{equation}
+%
+In terms of the costate $\lambda$, the optimal control $u^{*}$ is easy to find
+%
+\begin{equation}
+  \frac{dH}{du} = 0
+  \quad
+  \implies
+  \quad
+  u^{*} = -\frac{\lambda}{2RQ}.
+\end{equation}
+%
+Hamilton's equations then read
+%
+\begin{equation}
+%
+\begin{aligned}
+  \dot{x} &= -\frac{\lambda}{2RQ^{2}},\\
+  \dot{\lambda} &= -\frac{\partial_{x}R\lambda^{2}}{4R^{2}Q^{2}}
+\end{aligned}
+%
+\quad
+\text{s.t.}
+\quad
+\left\{
+\begin{aligned}
+  x(0) &= 0,\\
+  x(T) &= 1.
+\end{aligned}
+\right.
+\end{equation}
+%
+To solve this TPBVP, we have to find $\lambda(0)$ such that $x(T) = 1$ (e.g., using the shooting method).
+
+\end{document}

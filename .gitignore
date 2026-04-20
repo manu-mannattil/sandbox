@@ -41,6 +41,7 @@ MANIFEST
 *.cb
 *.cb2
 .*.lb
+*.pdf
 .pdf
 notes.pdf
 # these rules might exclude image files for figures etc.
@@ -54,3 +55,8 @@ notes.pdf
 *.synctex.gz(busy)
 *.pdfsync
 *.latex
+
+### Media files ###
+*.png
+*.jpg
+*.mp4
