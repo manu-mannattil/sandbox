@@ -1,0 +1,42 @@
+NOTE: Retired in December 2016 as I migrated to pass(1) for password
+management.
+
+
+                  _ ____      ___ __ ___   __ _ _ __
+                 | '_ \ \ /\ / / '_ ` _ \ / _` | '_ \
+                 | |_) \ V  V /| | | | | | (_| | | | |
+                 | .__/ \_/\_/ |_| |_| |_|\__,_|_| |_|
+                 | |
+                 |_|
+
+
+pwman is a nimble password manager written in pure POSIX shell [1].
+pwman is composed of
+
+  pwgen  -- create high quality random passwords
+  pwget  -- get a password from the password store
+  pwsort -- sort password stores alphabetically
+
+  TODO: pwprint -- pretty print password stores.
+
+Two of the above scripts (pwget and pwsort) act on a password store,
+which is a plaintext file containing records in the following format:
+
+  == example.com ==
+  password
+  username
+  additional info.
+  ...
+
+  == example.com ==
+  password
+  username
+  additional info.
+  ...
+
+Each line starting and ending with "==" begins a new record.  The two
+lines following it contain the password and username respectively.
+Additional lines are treated as comments.  Individual records are
+separated by blank line.
+
+[1]: Well, actually not that pure.  You might need some evil GNU tools!

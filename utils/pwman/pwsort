@@ -1,0 +1,72 @@
+#!/bin/sh
+#
+# pwsort -- sort password stores alphabetically.
+#
+# Usage: pwsort [-i] [<store>...]
+#
+#   -i  edit files in place
+#
+# NOTE: You'll probably need Gawk for this script to work.  Do not edit
+# files in place unless you are absolutely sure that it's sorting
+# correctly!
+#
+
+die() {
+  echo >&2 "$1"
+  echo >&2 "usage: pwsort [-i] [<file>...]"
+  exit 1
+}
+
+_sort() {
+  # Separate each record by a null character, pack it in a line,
+  # sort the result, and unpack it.
+  awk '
+    {
+      if ($0 ~ /^[ \t]*$/)
+        printf("\n")
+      else
+        printf("%s\0", $0)
+    }
+  '  "$1"  \
+    | sort \
+    | uniq \
+    | awk '
+        ! /^$/ {
+          gsub("\0+$", "\n")
+          gsub("\0", "\n")
+          print
+        }
+      '
+}
+
+# By default the sorted output is printed to stdout.
+# Do not edit the file in place.
+inplace="false"
+
+case "$1" in
+  -i)
+    [ $# -lt 2 ] && die "pwsort: no files specified"
+    inplace="true"
+    shift
+    ;;
+  -*)
+    die "pwsort: ${1} is not a valid option"
+    ;;
+esac
+
+if [ -t 0 ] && [ $# -gt 0 ]; then
+  for f in "$@"; do
+    if [ "$inplace" = "true" ]; then
+      tmpfile="$(mktemp)"
+      trap 'shred -zfun 5 "$tmpfile" >/dev/null 2>&1' EXIT
+      trap 'exit 2' HUP INT QUIT TERM
+
+      _sort "$f" >"$tmpfile"
+      cp -f "$tmpfile" "$f"
+    else
+      _sort "$f"
+    fi
+  done
+else
+  _sort </dev/stdin
+fi

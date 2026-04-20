@@ -1,0 +1,110 @@
+#!/bin/sh
+#
+# pwgen -- create high-quality random passwords
+#
+# Usage: pwgen [-adlpu] [-n <length>]
+#
+#   -a          don't check if characters of all kind appear in the
+#               generated password.
+#   -d          use digits
+#   -l          use lowercase letters
+#   -p          use punctuation
+#   -u          use upper case letters
+#   -n <length> length of generated password
+#
+# This script basically uses `tr' to pick random characters from
+# /dev/urandom and continues iterating it until all conditions on the
+# password are met.  Think /dev/random is more secure?  See this [1]
+# article.
+#
+# NOTE: This script will result in an infinite loop if the requested
+# password length is less than the number of character kinds.  The
+# default options are -dlpu -n 32
+#
+# [1]: http://www.2uo.de/myths-about-urandom/
+#
+
+die() {
+  echo >&2 "$1"
+  echo >&2 "usage: pwgen [-adlpu] [-n <length>]"
+  exit 1
+}
+
+# Character pool.  Note that I've only included unambiguous
+# characters (i.e., characters which look very different in
+# print).
+digit='23456789'
+lower='abcdefghijkmnopqrstuvwxyz'
+punct='!#%+:=?@'
+upper='ABCDEFGHJKLMNPRSTUVWXYZ'
+
+pwset=""
+pwlen=32
+pwall="true"
+
+while getopts ":adlpun:" opt; do
+  case "$opt" in
+    a)
+      pwall="false"
+      ;;
+    d)
+      pwset="${pwset}${digit}"
+      redigit="[${digit}]"
+      digit=""
+      ;;
+    l)
+      pwset="${pwset}${lower}"
+      relower="[${lower}]"
+      lower=""
+      ;;
+    p)
+      pwset="${pwset}${punct}"
+      repunct="[${punct}]"
+      punct=""
+      ;;
+    u)
+      pwset="${pwset}${upper}"
+      reupper="[${upper}]"
+      upper=""
+      ;;
+    n)
+      pwlen="$OPTARG"
+      ;;
+    :)
+      die "pwgen: -${OPTARG} requires an argument"
+      ;;
+    \?)
+      die "pwgen: -${OPTARG} is not a valid option"
+      ;;
+  esac
+done
+shift $(( OPTIND - 1 ))
+
+# Make the default character set (and corresponding regexes)
+# for password generation.
+if [ -z "$pwset" ]; then
+  pwset="${digit}${lower}${punct}${upper}"
+  redigit="[${digit}]"
+  relower="[${lower}]"
+  repunct="[${punct}]"
+  reupper="[${upper}]"
+fi
+
+# Generate a random password of length $pwlen.
+passwd=$(LC_CTYPE=C tr -dc "$pwset" </dev/urandom | head -c "$pwlen")
+
+# Ensure that characters of every kind are present in the
+# generated password.  Quite obviously, not the most elegant
+# way of doing it ;-)
+if [ "$pwall" = "true" ]; then
+  while ! echo "$passwd"                  \
+        | grep "$redigit"                 \
+        | grep "$relower"                 \
+        | grep "$repunct"                 \
+        | grep "$reupper" >/dev/null 2>&1
+  do
+    passwd=$(LC_CTYPE=C tr -dc "$pwset" </dev/urandom | head -c "$pwlen")
+  done
+fi
+
+echo "$passwd"

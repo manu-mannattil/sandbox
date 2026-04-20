@@ -1,0 +1,80 @@
+#!/bin/sh
+#
+# pwget -- get a password from the password store.
+#
+# Usage: pwget [-c] [-p|-r|-u] <record> [<store>]
+#
+#   -c  do not copy to clipboard and instead print to stdout
+#   -p  get password
+#   -r  get full record
+#   -u  get username
+#
+# Note: pwget looks for a default password store in the PWMAN_STORE
+# environment variable.
+#
+
+
+die() {
+  echo >&2 "$1"
+  echo >&2 "usage: pwget [-c] [-p|-r|-u] <record> [<store>]"
+  exit 1
+}
+
+get_user() {
+  sed -ne "
+    /^== ${1} ==$/ {
+      n
+      n
+      p
+    }
+  " "$2" | tr -d "\n"
+}
+
+get_passwd() {
+  sed -ne "
+    /^== ${1} ==$/ {
+      n
+      p
+    }
+  " "$2" | tr -d "\n"
+}
+
+get_record() {
+  sed -ne "
+    /^== ${1} ==$/, /^[ \t]*$/ {
+      p
+    }
+  " "$2"
+}
+
+record=""
+action="get_passwd"
+clip="true"
+
+while getopts ":cpru" opt; do
+  case "$opt" in
+    c)  clip="false"                                    ;;
+    p)  action="get_passwd"                             ;;
+    r)  action="get_record"                             ;;
+    u)  action="get_user"                               ;;
+    :)  die "pwget: -${OPTARG} requires an argument"  ;;
+    \?) die "pwget: -${OPTARG} is not a valid option" ;;
+  esac
+done
+shift $(( OPTIND - 1 ))
+
+if [ $# -gt 1 ]; then
+  store="$2"
+elif [ -n "$PWMAN_STORE" ]; then
+  store="$PWMAN_STORE"
+else
+  store="-"
+fi
+
+if [ $# -eq 0 ]; then
+  die "pwget: a record must be specified"
+elif [ "$clip" = true ]; then
+  "$action" "$1" "$store" | xclip -selection clipboard
+else
+  "$action" "$1" "$store"
+fi
