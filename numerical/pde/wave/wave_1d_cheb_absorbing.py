@@ -3,10 +3,10 @@
 """Solves the 1D wave equation using Chebyshev collocation.
 
     u_tt = u_xx     x in [-1, 1]
-    u = 0           x = -1, x = 1 (Dirichlet BC)
+    u_t - u_x = 0   x = -1 (absorbing BC)
+    u_t + u_x = 0   x = 1 (absorbing BC)
 
-In case of a string, the BC corresponds to tied ends.  So there's
-a phase change when the wave gets reflected back.
+The wave exits the domain without getting reflected.
 """
 
 import numpy as np
@@ -17,7 +17,7 @@ import warnings
 warnings.filterwarnings("ignore", category=np.exceptions.RankWarning)
 
 def cheb(N):
-    """Compute the Chebyshev differentiation matrix and nodes."""
+    """Compute the Chebyshev collocation matrix and nodes."""
     k = np.arange(N + 1)
 
     # Chebyshev nodes
@@ -51,14 +51,13 @@ D2 = D@D
 dt = 1e-3
 
 # Initial perturbation is a Gaussian.
-xx = np.linspace(-1, 1, 1000)
 u = np.exp(-100*x*x)
-# In the past, let's put the wave to the right of the origin.
-# So, this is a leftward moving wave.
-u_old = np.exp(-100*(x - dt)*(x - dt))
+# In the past, let's put the wave to the left of the origin.
+# So, this is a righward moving wave.
+u_old = np.exp(-100*(x + dt)*(x + dt))
 
 fig, ax = plt.subplots()
-ax.set_title("1d wave equation using Chebyshev differentiation")
+ax.set_title("1d wave equation using Chebyshev collocation")
 ax.set_xlabel(r"$x$")
 ax.set_ylabel(r"$u(x)$")
 ax.set_ylim(-1.5, 1.5)
@@ -69,8 +68,9 @@ line, = ax.plot(xx, np.polyval(np.polyfit(x, u, N), xx))
 def animate(i):
     global u, u_old
 
-    # Use Chebyshev differentiation to find u_xx.
+    # Use Chebyshev collocation to find u_xx.
     u_xx = D2@u
+    u_x = D@u
 
     # Leapfrog integration in real space.
     u_new = 2*u - u_old + dt**2*u_xx
@@ -78,8 +78,8 @@ def animate(i):
     u = u_new
 
     # Boundary conditions.
-    u[0] = 0
-    u[-1] = 0
+    u[0] = u_old[0] + dt*u_x[0]
+    u[-1] = u_old[-1] - dt*u_x[-1]
 
     line.set_ydata(np.polyval(np.polyfit(x, u, N), xx))
     return line,

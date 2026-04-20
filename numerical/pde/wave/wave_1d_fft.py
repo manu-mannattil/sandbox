@@ -43,6 +43,8 @@ def animate(i):
     u_q = np.fft.fft(u)
     u_xx = np.fft.ifft(-q*q*u_q).real
 
+     
+
     # Leapfrog integration in real space.
     u_new = 2*u - u_old + dt**2*u_xx
     u_old = u

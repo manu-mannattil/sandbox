@@ -1,23 +1,19 @@
 # -*- coding: utf-8 -*-
 
-"""Solves the 1D wave equation using Chebyshev collocation.
+"""Solves the 2D wave equation using Chebyshev collocation.
 
-    u_tt = u_xx     x in [-1, 1]
-    u_t - u_x = 0   x = -1 (absorbing BC)
-    u_t + u_x = 0   x = 1 (absorbing BC)
+    u_tt = u_xx + u_yy      (x, y) in [-1, 1] x [-1, 1]
+    u = 0                   x = -1, x = 1, y = -1, y = 1 (Dirichlet BC)
 
-The wave exits the domain without getting reflected.
+There's a phase change when the wave gets reflected back.
 """
 
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
 
-import warnings
-warnings.filterwarnings("ignore", category=np.exceptions.RankWarning)
-
 def cheb(N):
-    """Compute the Chebyshev differentiation matrix and nodes."""
+    """Compute the Chebyshev collocation matrix and nodes."""
     k = np.arange(N + 1)
 
     # Chebyshev nodes
@@ -43,47 +39,53 @@ def cheb(N):
 
     return D, x
 
-N = 50
+def rescale(u, interval=(-1, 1)):
+    # Rescale the values of the given field into a desired interval.
+    u = np.asarray(u)
+    return (interval[0] + (u - np.min(u)) * (interval[1] - interval[0]) / (np.max(u) - np.min(u)))
+
+N = 100
 D, x = cheb(N)
 D2 = D@D
+X, Y = np.meshgrid(x, x)
 
 # Time step.
-dt = 1e-3
+dt = 1e-4
 
 # Initial perturbation is a Gaussian.
-xx = np.linspace(-1, 1, 1000)
-u = np.exp(-100*x*x)
-# In the past, let's put the wave to the left of the origin.
-# So, this is a righward moving wave.
-u_old = np.exp(-100*(x + dt)*(x + dt))
+u = np.exp(-100*(X*X + Y*Y))
+u_old = u
 
 fig, ax = plt.subplots()
-ax.set_title("1d wave equation using Chebyshev differentiation")
+ax.set_title("2D wave equation (Dirichlet BC)")
 ax.set_xlabel(r"$x$")
 ax.set_ylabel(r"$u(x)$")
-ax.set_ylim(-1.5, 1.5)
+ax.set_ylim(-1, 1)
 
 xx = np.linspace(-1, 1, 1000)
-line, = ax.plot(xx, np.polyval(np.polyfit(x, u, N), xx))
+im = ax.pcolormesh(X, Y, rescale(u), cmap="RdBu_r")
+ax.set_aspect("equal")
 
 def animate(i):
     global u, u_old
 
-    # Use Chebyshev differentiation to find u_xx.
-    u_xx = D2@u
-    u_x = D@u
+    # Use Chebyshev collocation to find Laplacian(u).
+    # D2@u is u_xx and u@D2.T is u_yy.
+    Lu = D2@u + u@D2.T
 
     # Leapfrog integration in real space.
-    u_new = 2*u - u_old + dt**2*u_xx
+    u_new = 2*u - u_old + dt**2*Lu
     u_old = u
     u = u_new
 
     # Boundary conditions.
-    u[0] = u_old[0] + dt*u_x[0]
-    u[-1] = u_old[-1] - dt*u_x[-1]
+    u[0] = np.zeros(N + 1)
+    u[-1] = np.zeros(N + 1)
+    u[:, 0] = np.zeros(N + 1)
+    u[:, -1] = np.zeros(N + 1)
 
-    line.set_ydata(np.polyval(np.polyfit(x, u, N), xx))
-    return line,
+    im.set_array(rescale(u))
+    return im,
 
 ani = FuncAnimation(fig, animate, frames=1, interval=1, blit=True)
 plt.show()

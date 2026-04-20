@@ -1,4 +1,7 @@
-Programs written mainly to learn new things.  Here be dragons!
+# sandbox
+
+Throwaway programs written mainly to learn new things.  YMMV with code
+quality.  Hic sunt dracones!
 
 ## License
 
