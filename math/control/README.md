@@ -2,4 +2,5 @@
 
 ## Pontryagin's maximum principle
 
-- [Optimal battery charging](lead_acid.py)
+* [Battery charging](battery_charging) -- charging batteries using
+  optimal control.

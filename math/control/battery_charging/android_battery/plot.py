@@ -1,0 +1,67 @@
+# -*- coding: utf-8 -*-
+
+from battery import *
+import matplotlib.pyplot as plt
+import numpy as np
+
+b1 = BatteryInfo("data/2026-02-18.dat")
+t1, soc1, R1 = b1.get_field("resistance")
+t1, soc1, T1 = b1.get_field("temp")
+t1, soc1, I1 = b1.get_field("current_avg")
+
+b2 = BatteryInfo("data/2026-03-01.dat")
+t2, soc2, R2 = b2.get_field("resistance")
+t2, soc2, T2 = b2.get_field("temp")
+t2, soc2, I2 = b2.get_field("current_avg")
+
+b3 = BatteryInfo("data/2026-03-04.dat")
+t3, soc3, R3 = b3.get_field("resistance")
+t3, soc3, T3 = b3.get_field("temp")
+t3, soc3, I3 = b3.get_field("current_avg")
+
+plt.figure()
+plt.plot(t1/3600, soc1, "C0", label="test #1")
+plt.plot(t2/3600, soc1, "C2", label="test #2")
+plt.plot(t3/3600, soc1, "C3", label="test #3")
+plt.plot([1, 1], [-10, 105], "--", color="#aaaaaa", zorder=-10)
+plt.plot([-0.5, 2.5], [75, 75], "--", color="#aaaaaa", zorder=-10)
+plt.xlim([-0.05, 2.05])
+plt.ylim([-5, 105])
+plt.xlabel(r"time (hours)")
+plt.ylabel(r"state of charge $\xi$ (%)")
+plt.title("state of charge (SOC)")
+plt.legend()
+plt.savefig("figures/SOC_vs_time.png")
+
+plt.figure()
+plt.plot(soc1, 1e-6*R1, "C0", label="test #1")
+plt.plot(soc2, 1e-6*R2, "C2", label="test #2")
+plt.plot(soc3, 1e-6*R3, "C3", label="test #3")
+plt.xlabel(r"state of charge $\xi$ (%)")
+plt.ylabel(r"resistance $R$ ($\Omega$)")
+plt.title("resistance")
+plt.legend()
+plt.savefig("figures/R_vs_SOC.png")
+
+plt.figure()
+plt.plot(t1/3600, T1/10, "C0", label="test #1")
+plt.plot(t2/3600, T2/10, "C2", label="test #2")
+plt.plot(t2/3600, T3/10, "C3", label="test #3")
+plt.xlim([-0.05, 2.05])
+plt.plot([-0.5, 2.5], [39.25, 39.25], "--", color="#aaaaaa", zorder=-10)
+plt.xlabel(r"time (hours)")
+plt.ylabel(r"temperature ($^\circ$C)")
+plt.title("temperature")
+plt.legend()
+plt.savefig("figures/T_vs_time.png")
+
+plt.figure()
+plt.plot(soc1, 1e-6*I1, "C0", label="test #1")
+plt.plot(soc2, 1e-6*I2, "C2", label="test #2")
+plt.plot(soc3, 1e-6*I3, "C3", label="test #3")
+plt.xlabel(r"state of charge $\xi$ (%)")
+plt.ylabel(r"current I (A)")
+plt.title("current")
+plt.legend()
+plt.savefig("figures/I_vs_SOC.png")
+plt.show()

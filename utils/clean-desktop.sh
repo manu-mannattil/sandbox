@@ -138,6 +138,9 @@ cache ".config/zoom.conf"
 cache ".config/zoomus.conf"
 cache ".config/Unknown Organization/zoom.conf"
 
+cache ".wine"
+cache ".mp3tag.d"
+
 # Clean and restore ----------------------------------------------------
 
 echo "Removing all top-level hidden files from '$HOME'"
