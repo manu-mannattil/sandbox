@@ -1,0 +1,107 @@
+\documentclass[11pt]{article}
+
+\usepackage{amssymb,bm,mathtools} % fonts
+\usepackage{color,fullpage,graphicx,hyperref,parskip} % layout + media
+
+\begin{document}
+
+\title{Numerical Solution of the Telegrapher Equation}
+\author{Manu Mannattil}
+\maketitle
+
+\section{Telegrapher equation}
+
+We want to solve
+%
+\begin{equation}
+  \tau u_{tt} + u_{t} = u_{xx},
+  \quad x \in [-1, 1],
+\end{equation}
+%
+with appropriate boundary conditions.
+When $\tau = 0$, we get the diffusion equation, and when $\tau \gg 1$, the equation behaves like a wave equation.
+For intermediate $\tau$, the ``signal'' propagates at finite speed (unlike diffusive signals, which have an infinite speed of propagation).
+
+\section{Chebyshev collocation}
+
+If $D$ is the Chebyshev differentiation matrix, we compute $u_{xx}$ as
+%
+\begin{equation}
+  u_{xx}(x; t) = D^{2}u(x; t).
+\end{equation}
+%
+
+\subsection{Explicit scheme}
+
+An explicit scheme can be obtained by discretizing the time derivatives using
+%
+\begin{equation}\begin{aligned}
+  u_{tt}(x; t + \Delta t) &= \frac{u(x; t + \Delta t) - 2u(x; t) + u(x; t - \Delta t)}{(\Delta t)^{2}},\\
+  u_{t}(x; t + \Delta t) &= \frac{u(x; t + \Delta t) - u(x; t)}{\Delta t},
+\end{aligned}\end{equation}
+%
+which leads to
+%
+\begin{equation}
+  u(x; {t + \Delta t}) = \left(\frac{\Delta t + 2\tau}{\Delta t + \tau}\right)u(x; t) - \left(\frac{\tau}{\Delta t + \tau}\right)u(x; t - \Delta t) + \frac{(\Delta t)^{2}}{\Delta t + \tau}u_{xx}(x; t).
+\end{equation}
+%
+However, in general, $u(x; t + \Delta t)$ will not satisfy the imposed boundary conditions.
+For that we need to replace the end-point values $u(\pm 1; t + \Delta t)$ so that the boundary conditions are satisfied.
+
+\begin{itemize}
+  \item In the case of Dirichlet boundary conditions, we just set $u(\pm 1; t + \Delta t ) = 0$ after each time step.
+    This will obviously only work if the time step is very small.
+
+  \item For Neumann BC, we need to solve for $u_{1} = u(-1; t)$ and $u_{N} = u(1, t)$ from the BC $u_{x}(-1, t) = a$ and $u_{x}(1, t) = b$ after each time step.
+    To do so, let the entries of $D$ be
+  %
+  \begin{equation}
+    D = 
+    \begin{pmatrix}
+      D_{1,1} & D_{1,2} & \cdots & D_{1,N-1} & D_{1,N}\\
+      D_{2,1} & D_{2,2} & \cdots & D_{2,N-1} & D_{2,N}\\
+      \vdots & \vdots & \vdots & \vdots & \vdots\\
+      D_{N-1,1} & D_{N-1,2} & \cdots & D_{N-1,N-1} & D_{N-1,N}\\
+      D_{N,1} & D_{N,2} & \cdots & D_{N,N-1} & d_{N,N}
+    \end{pmatrix}
+  \end{equation}
+  %
+  Then, the BC can be written as two linear equations in two unknowns $u_{1}$ and $u_{N}$:
+  %
+  \begin{equation}
+    \begin{aligned}
+      D_{1,1}\,{\color{red}u_{1}} + D_{1,2}\,u_{2} + \cdots + D_{1,N-1}\,u_{N-1} + D_{1,N}\,{\color{red}u_{1}} &= a,\\
+      D_{N,1}\,{\color{red}u_{1}} + D_{N,2}\,u_{2} + \cdots + D_{N,N-1}\,u_{N-1} + D_{N,N}\,{\color{red}u_{N}} &= b.
+    \end{aligned}
+  \end{equation}
+  %
+  This can be rearranged and written in matrix form as
+  %
+  \begin{equation}
+    \begin{pmatrix}
+      D_{1,1} & D_{1,N}\\
+      D_{N,1} & D_{N,N}\\
+    \end{pmatrix}
+    \begin{pmatrix}
+      \color{red}
+      u_{1}\\
+      \color{red}
+      u_{2}
+    \end{pmatrix}
+    =
+    \begin{pmatrix}
+      a\\
+      b
+    \end{pmatrix}
+    -
+    \begin{pmatrix}
+      D_{1,2}\,u_{2} + \cdots + D_{1,N-1}\,u_{N-1}\\
+      D_{N,2}\,u_{2} + \cdots + D_{N,N-1}\,u_{N-1}
+    \end{pmatrix}.
+  \end{equation}
+  %
+  So to impose Neumann BC, we solve the above linear system after each time step.
+\end{itemize}
+
+\end{document}
