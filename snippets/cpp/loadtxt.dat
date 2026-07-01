@@ -1,0 +1,38 @@
+# Test file for loadtxt.cc
+#
+#		This file has trailing white space and inconsistent alignment
+# Column 1	Column 2		Column 3
+# --------	--------		--------
+#
+
+# Lorem ipsum.
+
+
+##
+
+1.0		5.3920E20			0.342019
+2.0		-6E-20			-0.548301
+3.0		7E-12			0.482010
+
+10.0		17E-12			0.482010
+
+
+
+
+# Lorem ipsum.
+# Lorem ipsum.
+
+# Lorem ipsum.
+# Lorem ipsum.
+
+2.0		-6E-20			-0.548301
+1.0		5.3920E20							0.342019
+10.0				17E-12			0.482010
+
+# These rows have spaces
+3.0		7E-12                                   0.482010
+2.0		-6E-20                  -0.548301
+1.0             5.3920E20                                                       0.342019
+10.0                            17E-12		
+
+# vim: ft=text fdm=marker sw=8 sts=8 noet
