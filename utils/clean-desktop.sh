@@ -83,7 +83,7 @@ _rm ~/*.torrent
 _rm ~/downloads/*.torrent
 
 # python/mamba
-mamba clean --all
+# mamba clean --all
 _rm ~/.local/miniforge/var/cache/*
 _rm ~/.local/share/pipx/logs/*
 
@@ -92,6 +92,7 @@ _rm ~/.local/share/pipx/logs/*
 cache ".bashrc_local"
 
 cache ".config/mozilla"
+cache ".mozilla"
 cache ".thunderbird"
 
 cache ".ssh/id_"*
@@ -140,6 +141,10 @@ cache ".config/Unknown Organization/zoom.conf"
 
 cache ".wine"
 cache ".mp3tag.d"
+
+cache ".local/share/Anki2"
+cache ".local/share/AnkiProgramFiles"
+cache ".cache/Anki"
 
 # Clean and restore ----------------------------------------------------
 
